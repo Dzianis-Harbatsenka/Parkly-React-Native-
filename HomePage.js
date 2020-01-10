@@ -15,14 +15,13 @@ class HomePage extends Component {
   constructor(props){
     super(props);
     this.state={
-      data:[],
-      isLoaded:false
+      data:[]
     };
   }
 
   getProtectedQuote = () =>{
     AsyncStorage.getItem('token').then((token) => {
-      fetch('http://parklybe.us-east-1.elasticbeanstalk.com/Boooking', {
+      fetch('http://parklybe.us-east-1.elasticbeanstalk.com/Booking', {
         method: 'GET',
         headers: { 'Authorization': 'Bearer ' + token }
       })
@@ -30,14 +29,9 @@ class HomePage extends Component {
       .then((responceData) => {
         Alert.alert('DONE!'),
         this.setState({
-          data: responceData,
+          data: responceData
         })
       })
-      /*.then(()=>{
-        this.setState({
-          isLoaded: true
-        })
-      })*/
       .done();
     })
   }
@@ -55,8 +49,8 @@ class HomePage extends Component {
   render() {
       return (
         <View style={styles.container}>
-          <TouchableOpacity  onPress={this.getProtectedQuote}>
-            <Text > Get Chuck Norris quote! </Text>
+          <TouchableOpacity  onPress={this.getProtectedQuote.bind(this)}>
+            <Text > GET DATA </Text>
           </TouchableOpacity>
 
           <TouchableOpacity  onPress={this.userLogout}>
@@ -64,7 +58,12 @@ class HomePage extends Component {
           </TouchableOpacity>
           
           <TouchableOpacity  onPress={()=>{console.log(this.state.data)}}>
-            <Text  > CHECK</Text>
+            <Text  > CHECK_DATA</Text>
+          </TouchableOpacity>
+          <TouchableOpacity  onPress={()=>{AsyncStorage.getItem('token').then((token)=>{
+            console.log(token);
+            return true;})}}>
+            <Text > Check TOKEN </Text>
           </TouchableOpacity>
           <DetailsList data={this.state.data}></DetailsList>
         </View>

@@ -6,18 +6,20 @@ import {
   } from 'react-native';
 
 class DetailsList extends Component{
-    constructor(props){
+    /*constructor(props){
         super(props);
         this.state={
             data: this.props.data
         }
-    }
+    }*/
 
     render(){
+        const list = this.props.data.map((data)=>{
+            <Text>{data.username}</Text>
+        })
         return(
-           
             <View>
-                <TouchableOpacity onPress={()=>{console.log(this.state.data)}}></TouchableOpacity>
+                {list}
             </View>
         )
     }

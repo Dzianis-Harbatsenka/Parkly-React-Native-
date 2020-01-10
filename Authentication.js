@@ -5,8 +5,7 @@ import {
   TouchableOpacity, 
   View, 
   StyleSheet, 
-  AsyncStorage, 
-  Alert
+  AsyncStorage
 } from 'react-native';
 import {Actions} from 'react-native-router-flux';
 
@@ -45,8 +44,7 @@ class Authentication extends Component {
     })
     .then((response) => response.json())
     .then((responseData) => {
-      this.saveItem('token', responseData.token),
-      Alert.alert('Login Success!'),
+      this.saveItem('token', responseData.token)
       Actions.HomePage();
     })
     .done();
@@ -78,6 +76,14 @@ class Authentication extends Component {
           />
           <TouchableOpacity  onPress={this.userLogin.bind(this)}>
             <Text > Log In </Text>
+          </TouchableOpacity>
+          <TouchableOpacity  onPress={()=>{AsyncStorage.getItem('token').then((token)=>{
+            console.log(token);
+            return true;})}}>
+            <Text > Check TOKEN </Text>
+          </TouchableOpacity>
+          <TouchableOpacity  onPress={()=>{AsyncStorage.clear()}}>
+            <Text > CLEAR storage </Text>
           </TouchableOpacity>
         </View>
       </View>
