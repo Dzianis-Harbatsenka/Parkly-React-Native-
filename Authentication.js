@@ -5,7 +5,8 @@ import {
   TouchableOpacity, 
   View, 
   StyleSheet, 
-  AsyncStorage
+  AsyncStorage,
+  Alert
 } from 'react-native';
 import {Actions} from 'react-native-router-flux';
 
@@ -45,12 +46,20 @@ class Authentication extends Component {
     .then((response) => response.json())
     .then((responseData) => {
       this.saveItem('token', responseData.token)
-      Actions.HomePage();
+    })
+    .then(()=>{  
+      AsyncStorage.getItem('token').then(token=>{
+        if(token==null)
+          Alert.alert("Login or Password is incorrect!","Try again.")
+        else
+          Actions.HomePage()
+      })
     })
     .done();
   }
 
   render() {
+
     return (
       <View style={styles.container}>
         <Text > PARKLY </Text>
@@ -76,11 +85,6 @@ class Authentication extends Component {
           />
           <TouchableOpacity  onPress={this.userLogin.bind(this)}>
             <Text > Log In </Text>
-          </TouchableOpacity>
-          <TouchableOpacity  onPress={()=>{AsyncStorage.getItem('token').then((token)=>{
-            console.log(token);
-            return true;})}}>
-            <Text > Check TOKEN </Text>
           </TouchableOpacity>
           <TouchableOpacity  onPress={()=>{AsyncStorage.clear()}}>
             <Text > CLEAR storage </Text>

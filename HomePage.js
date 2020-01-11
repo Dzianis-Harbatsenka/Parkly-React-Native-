@@ -5,18 +5,25 @@ import {
   TouchableOpacity, 
   View, 
   StyleSheet,
-  AsyncStorage
+  AsyncStorage,
+  ScrollView,
+  Button
 } from 'react-native';
 import {Actions} from 'react-native-router-flux';
-import DetailsList from './DetailsList'
 
 class HomePage extends Component {
 
   constructor(props){
     super(props);
     this.state={
-      data:[]
+      data:[],
+      isLoading: true
     };
+  }
+
+
+  componentDidMount(){
+    this.getProtectedQuote();
   }
 
   getProtectedQuote = () =>{
@@ -27,11 +34,15 @@ class HomePage extends Component {
       })
       .then((response) => response.json())
       .then((responceData) => {
-        Alert.alert('DONE!'),
         this.setState({
           data: responceData
         })
       })
+      .then(()=>
+        this.setState({
+          isLoading: false
+        })
+      )
       .done();
     })
   }
@@ -41,42 +52,79 @@ class HomePage extends Component {
       await AsyncStorage.removeItem('token');
       Alert.alert('Logout Success!');
       Actions.Authentication();
-    } catch (error) {
+    } 
+    catch (error) {
       console.log('AsyncStorage error: ' + error.message);
     }
   }
 
   render() {
+
+      const {data,isLoading}=this.state;
+
+      if(isLoading){
+        return (
+          <View style={styles.container}>
+            <Text>...Loading</Text>
+          </View>
+        )
+      }
+
       return (
-        <View style={styles.container}>
-          <TouchableOpacity  onPress={this.getProtectedQuote.bind(this)}>
-            <Text > GET DATA </Text>
+        <View style={{flex: 1,backgroundColor: '#F5FCFF'}}>
+          <TouchableOpacity style={{marginTop: 30, textAlign: 'left'}}  onPress={this.userLogout}>
+            <Text> Log out </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity  onPress={this.userLogout}>
-            <Text  > Log out </Text>
-          </TouchableOpacity>
+          <ScrollView>
+            {data.map(item=>
+            <DataList key={item.id} item={item}></DataList>
+            )
+            }
+          </ScrollView>
+
           
-          <TouchableOpacity  onPress={()=>{console.log(this.state.data)}}>
-            <Text  > CHECK_DATA</Text>
-          </TouchableOpacity>
-          <TouchableOpacity  onPress={()=>{AsyncStorage.getItem('token').then((token)=>{
-            console.log(token);
-            return true;})}}>
-            <Text > Check TOKEN </Text>
-          </TouchableOpacity>
-          <DetailsList data={this.state.data}></DetailsList>
         </View>
       );
   }
 }
 
 export default HomePage;
-//<DetailsList data={this.state.data}></DetailsList>
 
+const DataList =(props)=>{
+
+  const item=props.item;
+
+  return(
+    <View>
+      <TouchableOpacity onPress={()=>Actions.Details({ data: item })}>
+        <View style={styles.listelement}>
+          <Text style={styles.text}>{item.id}</Text>
+          <Text style={styles.text}>{item.startDate}</Text>
+          <Text style={styles.text}>{item.endDate}</Text>
+          <Text style={styles.text}>{item.active.toString()}</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+  )
+}
+//<DetailsList data={this.state.data}></DetailsList>
+/*
+<FlatList
+            data={data}
+            renderItem={info=>
+              <View style={styles.container}>
+                <TouchableOpacity onPress={()=>console.log(info.id)}>
+                  <Text>touch</Text>
+                </TouchableOpacity>
+              </View>  
+            }
+            keyExtractor={item => item.id.toString()}
+          />
+*/
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex:1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
@@ -102,7 +150,17 @@ const styles = StyleSheet.create({
     margin: 10,
     width: 50,
     height: 40,
+  },
+  listelement: {
+    flex: 1,
+    resizeMode: 'cover',
+    margin: 10,
+    borderWidth: 1
+  },
+  text: {
+    margin: 10
   }
+
 });
 
 

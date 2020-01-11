@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { ActivityIndicator, AsyncStorage } from 'react-native';
-import { TextInput } from 'react-native-gesture-handler';
 import {Router, Scene} from 'react-native-router-flux';
 import Authentication from "./Authentication"
 import HomePage from './HomePage'
+import Details from './Details'
 
 class App extends Component {
 
@@ -42,9 +42,14 @@ class App extends Component {
             />
             <Scene
               component={HomePage}
-              hideNavBar={this.state.hasToken}
+              hideNavBar={true}
               key='HomePage'
               title='Home Page'
+            />
+            <Scene
+              component={Details}
+              key='Details'
+              title='Details'
             />
           </Scene>
         </Router>
