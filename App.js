@@ -4,6 +4,8 @@ import {Router, Scene} from 'react-native-router-flux';
 import Authentication from "./Authentication"
 import HomePage from './HomePage'
 import Details from './Details'
+import * as Font from 'expo-font';
+  
 
 class App extends Component {
 
@@ -15,23 +17,28 @@ class App extends Component {
   }
 
   componentDidMount() {
+    Font.loadAsync({
+      'SourceCodePro-Black': require('./assets/fonts/SourceCodePro-Regular.ttf'),
+      'SourceCodePro-Light': require('./assets/fonts/SourceCodePro-Light.ttf'),
+      'SourceCodePro-Regular': require('./assets/fonts/SourceCodePro-Regular.ttf'),
+    });
     AsyncStorage.getItem('token').then((token) => {
       this.setState({ 
-        hasToken: token !== null, 
-        isLoaded: true 
+        hasToken: token !== null
       })
-    });
+    })
+    .then(()=>this.setState({isLoaded:true}));
   }
 
   render() {
 
     if (!this.state.isLoaded) {
       return (
-        <ActivityIndicator />
+        <ActivityIndicator/>
       )
     }else{
       return(
-        <Router>
+        <Router navigationBarStyle={{backgroundColor: '#2054A0'}}>
           <Scene key='root'>
             <Scene
               component={Authentication}
@@ -44,12 +51,13 @@ class App extends Component {
               component={HomePage}
               hideNavBar={true}
               key='HomePage'
-              title='Home Page'
+              title='Home Page' 
             />
             <Scene
               component={Details}
               key='Details'
-              title='Details'
+              title='DETAILS'
+              titleStyle={{fontWeight: 'normal',fontFamily: 'SourceCodePro-Black',color: '#FFFFFF'}}
             />
           </Scene>
         </Router>

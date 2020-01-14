@@ -7,9 +7,13 @@ import {
   StyleSheet,
   AsyncStorage,
   ScrollView,
-  Button
+  Image
 } from 'react-native';
 import {Actions} from 'react-native-router-flux';
+import { Divider } from 'react-native-elements';
+
+
+
 
 class HomePage extends Component {
 
@@ -64,26 +68,26 @@ class HomePage extends Component {
 
       if(isLoading){
         return (
-          <View style={styles.container}>
-            <Text>...Loading</Text>
+          <View style={styles.loading}>
+            <Text style={styles.text}>...Loading</Text>
           </View>
         )
       }
 
       return (
-        <View style={{flex: 1,backgroundColor: '#F5FCFF'}}>
-          <TouchableOpacity style={{marginTop: 30, textAlign: 'left'}}  onPress={this.userLogout}>
-            <Text> Log out </Text>
-          </TouchableOpacity>
-
+        <View style={styles.container}>
+          <View style={{backgroundColor: '#2054A0'}}>
+            <TouchableOpacity onPress={this.userLogout}>
+              <Text style={styles.logout}> LOG OUT </Text>
+            </TouchableOpacity>   
+            <Divider style={styles.divider}></Divider>         
+          </View>
+          
           <ScrollView>
             {data.map(item=>
-            <DataList key={item.id} item={item}></DataList>
-            )
-            }
+              <DataList key={item.id} item={item}></DataList>
+            )}
           </ScrollView>
-
-          
         </View>
       );
   }
@@ -99,68 +103,113 @@ const DataList =(props)=>{
     <View>
       <TouchableOpacity onPress={()=>Actions.Details({ data: item })}>
         <View style={styles.listelement}>
-          <Text style={styles.text}>{item.id}</Text>
-          <Text style={styles.text}>{item.startDate}</Text>
-          <Text style={styles.text}>{item.endDate}</Text>
-          <Text style={styles.text}>{item.active.toString()}</Text>
+          <View>
+            <View style={styles.row}>
+              <Text style={styles.text}>ID:{item.id}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.text}>User ID: {item.userId}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.text}>Parking ID: {item.parkingId}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.text}>Booked: {item.startDate}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.start}>Start: {item.startDate}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.end}>End: {item.endDate}</Text>
+            </View>
+          </View>
+          <Image style={styles.image} source={require('./LogoDay.jpg')}></Image>
         </View>
       </TouchableOpacity>
     </View>
   )
 }
-//<DetailsList data={this.state.data}></DetailsList>
-/*
-<FlatList
-            data={data}
-            renderItem={info=>
-              <View style={styles.container}>
-                <TouchableOpacity onPress={()=>console.log(info.id)}>
-                  <Text>touch</Text>
-                </TouchableOpacity>
-              </View>  
-            }
-            keyExtractor={item => item.id.toString()}
-          />
-*/
+
 const styles = StyleSheet.create({
   container: {
-    flex:1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-    marginBottom: 100,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-  textbox: {
-    borderWidth: 1,
-    margin: 10,
-    width: 200,
-    textAlign: "center"
-  },
-  button: {
-    margin: 10,
-    width: 50,
-    height: 40,
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+
   },
   listelement: {
+    backgroundColor: '#FFFFFF',
     flex: 1,
-    resizeMode: 'cover',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     margin: 10,
-    borderWidth: 1
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  start: {
+    fontSize: 14,
+    marginLeft:10,
+    marginBottom:5,
+    marginTop: 5,
+    fontFamily: 'OpenSans-Regular',
+    color: 'green'
   },
   text: {
-    margin: 10
+    fontSize: 14,
+    marginLeft:10,
+    marginBottom:5,
+    marginTop: 5,
+    fontFamily: 'OpenSans-Regular'
+  },
+  end: {
+    fontSize: 14,
+    marginLeft:10,
+    marginBottom:5,
+    marginTop: 5,
+    fontFamily: 'OpenSans-Regular',
+    color: 'red'
+  },
+  logout: {
+    marginLeft: 20,
+    marginTop: 40,
+    marginBottom: 15,
+    fontSize: 20,
+    textAlign: 'center',
+    fontFamily: 'SourceCodePro-Black',
+    color: '#FFFFFF'
+  },
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: "center",
+    backgroundColor: '#FFFFFF',
+  },
+  row: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  image: {
+    margin: 10,
+    width: 100,
+    height: 100
+  },
+  divider: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
   }
-
 });
 
 

@@ -6,21 +6,40 @@ import {
   View, 
   StyleSheet, 
   AsyncStorage,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
 import {Actions} from 'react-native-router-flux';
+import * as Font from 'expo-font';
+import { Base64 } from 'js-base64';
+
 
 class Authentication extends Component {
 
   constructor() {
+
     super();
     this.state = { 
         username: null, 
-        password: null 
+        password: null,
+        isLoading: true 
     };
   }
 
+  componentDidMount() {
+    
+    Font.loadAsync({
+      'SourceCodePro-Black': require('./assets/fonts/SourceCodePro-Regular.ttf'),
+      'OpenSans-Regular': require('./assets/fonts/OpenSans-Regular.ttf'),
+      'SourceCodePro-Bold': require('./assets/fonts/SourceCodePro-Bold.ttf'),
+
+    })
+    .then(()=>this.setState({isLoading: false}))
+    .done();
+  }
+
   async saveItem(item, selectedValue) {
+
     try {
       await AsyncStorage.setItem(item, selectedValue);
     } catch (error) {
@@ -28,10 +47,19 @@ class Authentication extends Component {
     }
   }
 
+  encrypt_password = () => {
+
+    var temp = Base64.encode(this.state.password);
+    this.setState({ password: temp });
+  }
 
   userLogin() {
+
     if (!this.state.username || !this.state.password) 
       return;
+
+    this.encrypt_password();
+
     fetch('http://parklybe.us-east-1.elasticbeanstalk.com/admin', {
       method: 'POST',
       headers: { 
@@ -43,9 +71,16 @@ class Authentication extends Component {
         password: this.state.password,
       })
     })
-    .then((response) => response.json())
+    .then((response) => response.json()/*{
+
+      try{
+        response.json()
+      }catch(error){
+        Alert.alert("Login or Password is incorrect!","Try again.");
+      }
+    }*/)
     .then((responseData) => {
-      this.saveItem('token', responseData.token)
+        this.saveItem('token', responseData.token);
     })
     .then(()=>{  
       AsyncStorage.getItem('token').then(token=>{
@@ -60,9 +95,15 @@ class Authentication extends Component {
 
   render() {
 
+    const {username,password,isLoading}=this.state;
+
+    if(isLoading){
+      return null;
+    }
     return (
       <View style={styles.container}>
-        <Text > PARKLY </Text>
+        <Image style={styles.image} source={require('./LogoDay.jpg')}></Image>
+        <Text style={styles.logo}> PARKLY </Text>
         <View style={styles.welcome}>
           <TextInput
             editable={true}
@@ -84,10 +125,7 @@ class Authentication extends Component {
             value={this.state.password}
           />
           <TouchableOpacity  onPress={this.userLogin.bind(this)}>
-            <Text > Log In </Text>
-          </TouchableOpacity>
-          <TouchableOpacity  onPress={()=>{AsyncStorage.clear()}}>
-            <Text > CLEAR storage </Text>
+            <Text style={styles.login}> LOG IN </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -102,13 +140,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#FFFFFF'
+    
+    
   },
-  welcome: {
-    fontSize: 20,
+  logo: {
+    fontSize: 25,
     textAlign: 'center',
-    margin: 10,
-    marginBottom: 100,
+    marginBottom: 30,
+    fontFamily: 'SourceCodePro-Black',
+    color: '#2054A0'
   },
   instructions: {
     textAlign: 'center',
@@ -116,14 +157,26 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   textbox: {
-    borderWidth: 1,
+    borderWidth: 0.25,
     margin: 10,
     width: 200,
-    textAlign: "center"
+    textAlign: "center",
+    fontFamily: 'SourceCodePro-Black',
   },
   button: {
     margin: 10,
     width: 50,
     height: 40,
+  },
+  image: {
+      width: 170,
+      height: 170,
+  },
+  login: {
+    textAlign:'center',
+    fontSize: 18,
+    margin: 10,
+    fontFamily: 'SourceCodePro-Black',
+    color: '#2054A0'
   }
 });
