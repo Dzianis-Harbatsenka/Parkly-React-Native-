@@ -71,14 +71,7 @@ class Authentication extends Component {
         password: this.state.password,
       })
     })
-    .then((response) => response.json()/*{
-
-      try{
-        response.json()
-      }catch(error){
-        Alert.alert("Login or Password is incorrect!","Try again.");
-      }
-    }*/)
+    .then((response) => response.json())
     .then((responseData) => {
         this.saveItem('token', responseData.token);
     })
