@@ -7,12 +7,12 @@ import {
   StyleSheet, 
   AsyncStorage,
   Alert,
-  Image
+  Image,
+  ScrollView
 } from 'react-native';
 import {Actions} from 'react-native-router-flux';
 import * as Font from 'expo-font';
 import { Base64 } from 'js-base64';
-
 
 class Authentication extends Component {
 
@@ -71,9 +71,17 @@ class Authentication extends Component {
         password: this.state.password,
       })
     })
-    .then((response) => response.json())
+    .then((response) => {
+      if(response.status === 401)
+        return null
+      else
+        return response.json()
+    })
     .then((responseData) => {
-        this.saveItem('token', responseData.token);
+        if(responseData == null)
+          this.saveItem('token', null)
+        else
+          this.saveItem('token', responseData.token)
     })
     .then(()=>{  
       AsyncStorage.getItem('token').then(token=>{
@@ -88,39 +96,43 @@ class Authentication extends Component {
 
   render() {
 
-    const {username,password,isLoading}=this.state;
+    const {isLoading}=this.state;
 
     if(isLoading){
       return null;
     }
     return (
-      <View style={styles.container}>
-        <Image style={styles.image} source={require('./LogoDay.jpg')}></Image>
-        <Text style={styles.logo}> PARKLY </Text>
-        <View style={styles.welcome}>
-          <TextInput
-            editable={true}
-            onChangeText={(username) => this.setState({username})}
-            placeholder='Username'
-            ref='username'
-            returnKeyType='next'
-            style={styles.textbox}
-            value={this.state.username}
-          />
-          <TextInput
-            editable={true}
-            onChangeText={(password) => this.setState({password})}
-            placeholder='Password'
-            ref='password'
-            returnKeyType='next'
-            secureTextEntry={true}
-            style={styles.textbox}
-            value={this.state.password}
-          />
-          <TouchableOpacity  onPress={this.userLogin.bind(this)}>
-            <Text style={styles.login}> LOG IN </Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.outer}>
+        <ScrollView>
+          <View style={styles.container}>
+            <Image style={styles.image} source={require('./LogoDay.jpg')}></Image>
+            <Text style={styles.logo}> PARKLY </Text>
+            <View style={styles.welcome}>
+              <TextInput
+                editable={true}
+                onChangeText={(username) => this.setState({username})}
+                placeholder='Username'
+                ref='username'
+                returnKeyType='next'
+                style={styles.textbox}
+                value={this.state.username}
+              />
+              <TextInput
+                editable={true}
+                onChangeText={(password) => this.setState({password})}
+                placeholder='Password'
+                ref='password'
+                returnKeyType='next'
+                secureTextEntry={true}
+                style={styles.textbox}
+                value={this.state.password}
+              />
+              <TouchableOpacity  onPress={this.userLogin.bind(this)}>
+                <Text style={styles.login}> LOG IN </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
       </View>
     );
   }
@@ -131,11 +143,13 @@ export default Authentication;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#FFFFFF'
-    
-    
+  },
+  outer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF'
   },
   logo: {
     fontSize: 25,
@@ -154,7 +168,7 @@ const styles = StyleSheet.create({
     margin: 10,
     width: 200,
     textAlign: "center",
-    fontFamily: 'SourceCodePro-Black',
+    fontFamily: 'OpenSans-Regular',
   },
   button: {
     margin: 10,
@@ -162,6 +176,7 @@ const styles = StyleSheet.create({
     height: 40,
   },
   image: {
+      marginTop: 50,
       width: 170,
       height: 170,
   },

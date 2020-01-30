@@ -7,7 +7,8 @@ import {
   StyleSheet,
   AsyncStorage,
   ScrollView,
-  Image
+  Image,
+  RefreshControl
 } from 'react-native';
 import {Actions} from 'react-native-router-flux';
 import { Divider } from 'react-native-elements';
@@ -31,6 +32,9 @@ class HomePage extends Component {
   }
 
   getProtectedQuote = () =>{
+    this.setState({
+      isLoading: true
+    })
     AsyncStorage.getItem('token').then((token) => {
       fetch('http://parklybe.us-east-1.elasticbeanstalk.com/Booking', {
         method: 'GET',
@@ -51,6 +55,10 @@ class HomePage extends Component {
     })
   }
 
+  onRefresh = () => {
+    this.getProtectedQuote();
+  }
+
   async userLogout() {
     try {
       await AsyncStorage.removeItem('token');
@@ -68,8 +76,16 @@ class HomePage extends Component {
 
       if(isLoading){
         return (
-          <View style={styles.loading}>
-            <Text style={styles.text}>...Loading</Text>
+          <View style={styles.container}>
+            <View style={{backgroundColor: '#2054A0'}}>
+              <TouchableOpacity onPress={this.userLogout}>
+                <Text style={styles.logout}> LOG OUT </Text>
+              </TouchableOpacity>   
+              <Divider style={styles.divider}></Divider>         
+            </View>
+            <View style={styles.loading}>
+              <Text style={styles.text}>...Loading</Text>
+            </View>
           </View>
         )
       }
@@ -83,7 +99,14 @@ class HomePage extends Component {
             <Divider style={styles.divider}></Divider>         
           </View>
           
-          <ScrollView>
+          <ScrollView refreshControl={
+            <RefreshControl 
+              onRefresh={this.onRefresh}
+              colors={["#FFFFFF"]}
+              progressBackgroundColor='#2054A0'
+              title="Refresh"
+              ></RefreshControl>
+          } overScrollMode='always'>
             {data.map(item=>
               <DataList key={item.id} item={item}></DataList>
             )}

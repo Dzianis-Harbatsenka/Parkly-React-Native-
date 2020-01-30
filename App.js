@@ -51,13 +51,15 @@ class App extends Component {
               component={HomePage}
               hideNavBar={true}
               key='HomePage'
-              title='Home Page' 
+              title='LOG OUT'
+              titleStyle={{fontWeight: 'normal',fontFamily: 'SourceCodePro-Black',color: '#FFFFFF'}}
             />
             <Scene
               component={Details}
               key='Details'
               title='DETAILS'
-              titleStyle={{fontWeight: 'normal',fontFamily: 'SourceCodePro-Black',color: '#FFFFFF'}}
+              show
+              titleStyle={{fontWeight: 'normal',fontFamily: 'SourceCodePro-Black',color: '#FFFFFF'}} 
             />
           </Scene>
         </Router>
