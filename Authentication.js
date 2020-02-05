@@ -8,11 +8,13 @@ import {
   AsyncStorage,
   Alert,
   Image,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from 'react-native';
-import {Actions} from 'react-native-router-flux';
 import * as Font from 'expo-font';
 import { Base64 } from 'js-base64';
+
+
 
 class Authentication extends Component {
 
@@ -26,15 +28,37 @@ class Authentication extends Component {
     };
   }
 
+  static navigationOptions = {
+    headerShown: false
+  }
+
   componentDidMount() {
     
     Font.loadAsync({
       'SourceCodePro-Black': require('./assets/fonts/SourceCodePro-Regular.ttf'),
       'OpenSans-Regular': require('./assets/fonts/OpenSans-Regular.ttf'),
       'SourceCodePro-Bold': require('./assets/fonts/SourceCodePro-Bold.ttf'),
+      'OpenSans-Bold': require('./assets/fonts/OpenSans-Bold.ttf'),
 
     })
     .then(()=>this.setState({isLoading: false}))
+    .then(()=>{
+      AsyncStorage.getItem('token').then(token=>{
+        if(token!=null)
+          Alert.alert(
+            "Previous session is restored",
+            "Continue?",
+            [
+              {text : 'Cancel', onPress: ()=>{
+                AsyncStorage.clear();
+                return true;
+              }},
+              {text : 'OK', onPress: ()=>{
+                this.props.navigation.navigate('HomePage')
+              }}
+            ]
+            )
+    })})
     .done();
   }
 
@@ -58,9 +82,9 @@ class Authentication extends Component {
     if (!this.state.username || !this.state.password) 
       return;
 
-    this.encrypt_password();
+    //this.encrypt_password();
 
-    fetch('http://parklybe.us-east-1.elasticbeanstalk.com/admin', {
+    fetch('http://parklybe2.us-east-1.elasticbeanstalk.com/login', {
       method: 'POST',
       headers: { 
         'Accept': 'application/json', 
@@ -69,6 +93,8 @@ class Authentication extends Component {
       body: JSON.stringify({
         username: this.state.username,
         password: this.state.password,
+        //username: 'Brutal',
+        //password: 'Denizzz',
       })
     })
     .then((response) => {
@@ -88,7 +114,7 @@ class Authentication extends Component {
         if(token==null)
           Alert.alert("Login or Password is incorrect!","Try again.")
         else
-          Actions.HomePage()
+          this.props.navigation.navigate('HomePage')
       })
     })
     .done();
@@ -99,23 +125,29 @@ class Authentication extends Component {
     const {isLoading}=this.state;
 
     if(isLoading){
-      return null;
+      return (
+        <View style={styles.container}>
+            <View style={styles.loading}>
+              <ActivityIndicator size={80} color='#2054A0'></ActivityIndicator>
+            </View>
+          </View>
+      );
     }
     return (
       <View style={styles.outer}>
         <ScrollView>
           <View style={styles.container}>
-            <Image style={styles.image} source={require('./LogoDay.jpg')}></Image>
+              <Image style={styles.image} source={require('./LogoDay.jpg')}></Image>
             <Text style={styles.logo}> PARKLY </Text>
             <View style={styles.welcome}>
               <TextInput
-                editable={true}
-                onChangeText={(username) => this.setState({username})}
-                placeholder='Username'
-                ref='username'
-                returnKeyType='next'
-                style={styles.textbox}
-                value={this.state.username}
+              editable={true}
+              onChangeText={(username) => this.setState({username})}
+              placeholder='Username'
+              ref='username'
+              returnKeyType='next'
+              style={styles.textbox}
+              value={this.state.username}
               />
               <TextInput
                 editable={true}
@@ -177,8 +209,8 @@ const styles = StyleSheet.create({
   },
   image: {
       marginTop: 50,
-      width: 170,
-      height: 170,
+      width: 160,
+      height: 160,
   },
   login: {
     textAlign:'center',
@@ -186,5 +218,11 @@ const styles = StyleSheet.create({
     margin: 10,
     fontFamily: 'SourceCodePro-Black',
     color: '#2054A0'
-  }
+  },
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: "center",
+    backgroundColor: '#FFFFFF',
+  },
 });

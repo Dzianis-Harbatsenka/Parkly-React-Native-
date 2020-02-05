@@ -8,10 +8,10 @@ import {
   AsyncStorage,
   ScrollView,
   Image,
-  RefreshControl
+  RefreshControl,
+  ActivityIndicator,
+  BackHandler
 } from 'react-native';
-import {Actions} from 'react-native-router-flux';
-import { Divider } from 'react-native-elements';
 
 
 
@@ -26,17 +26,54 @@ class HomePage extends Component {
     };
   }
 
+  Backha
+  async userLogout(navigation) {
+    try {
+      await AsyncStorage.removeItem('token');
+      Alert.alert('Logout Success!');
+      navigation.navigate('Authentication');
+    } 
+    catch (error) {
+      console.log('AsyncStorage error: ' + error.message);
+    }
+  }
+
+  static navigationOptions = ({navigation})=>{
+    return {
+      title : '',
+      headerStyle: {
+        backgroundColor: '#2054A0'
+      },
+      headerLeft: ()=>(
+        <TouchableOpacity onPress={()=>navigation.navigate('Authentication')}>
+          <Text style={styles.logout}> LOG OUT </Text>
+        </TouchableOpacity>
+        )
+    }
+  }
 
   componentDidMount(){
     this.getProtectedQuote();
+    this.props.navigation.setParams({userLogout: ()=>this.userLogout(this.props.navigation)});
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
   }
+
+  componentWillUnmount(){
+    BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
+    this.userLogout(this.props.navigation);
+  }
+
+  handleBackPress =()=>{
+    return true;
+  }
+
 
   getProtectedQuote = () =>{
     this.setState({
       isLoading: true
     })
     AsyncStorage.getItem('token').then((token) => {
-      fetch('http://parklybe.us-east-1.elasticbeanstalk.com/Booking', {
+      fetch('http://parklybe2.us-east-1.elasticbeanstalk.com/booking', {
         method: 'GET',
         headers: { 'Authorization': 'Bearer ' + token }
       })
@@ -56,19 +93,10 @@ class HomePage extends Component {
   }
 
   onRefresh = () => {
-    this.getProtectedQuote();
+    setTimeout(this.getProtectedQuote,200);
   }
 
-  async userLogout() {
-    try {
-      await AsyncStorage.removeItem('token');
-      Alert.alert('Logout Success!');
-      Actions.Authentication();
-    } 
-    catch (error) {
-      console.log('AsyncStorage error: ' + error.message);
-    }
-  }
+  
 
   render() {
 
@@ -77,14 +105,8 @@ class HomePage extends Component {
       if(isLoading){
         return (
           <View style={styles.container}>
-            <View style={{backgroundColor: '#2054A0'}}>
-              <TouchableOpacity onPress={this.userLogout}>
-                <Text style={styles.logout}> LOG OUT </Text>
-              </TouchableOpacity>   
-              <Divider style={styles.divider}></Divider>         
-            </View>
             <View style={styles.loading}>
-              <Text style={styles.text}>...Loading</Text>
+              <ActivityIndicator size={80} color='#2054A0'></ActivityIndicator>
             </View>
           </View>
         )
@@ -92,13 +114,6 @@ class HomePage extends Component {
 
       return (
         <View style={styles.container}>
-          <View style={{backgroundColor: '#2054A0'}}>
-            <TouchableOpacity onPress={this.userLogout}>
-              <Text style={styles.logout}> LOG OUT </Text>
-            </TouchableOpacity>   
-            <Divider style={styles.divider}></Divider>         
-          </View>
-          
           <ScrollView refreshControl={
             <RefreshControl 
               onRefresh={this.onRefresh}
@@ -108,7 +123,7 @@ class HomePage extends Component {
               ></RefreshControl>
           } overScrollMode='always'>
             {data.map(item=>
-              <DataList key={item.id} item={item}></DataList>
+              <DataList key={item.id} item={item} navigation={this.props.navigation}></DataList>
             )}
           </ScrollView>
         </View>
@@ -120,30 +135,36 @@ export default HomePage;
 
 const DataList =(props)=>{
 
-  const item=props.item;
+  const {item, navigation}=props;
 
   return(
     <View>
-      <TouchableOpacity onPress={()=>Actions.Details({ data: item })}>
+      <TouchableOpacity onPress={()=>navigation.navigate('Details',{data:item})}>
         <View style={styles.listelement}>
           <View>
             <View style={styles.row}>
-              <Text style={styles.text}>ID:{item.id}</Text>
+              <Text style={styles.boldtext}>ID:</Text>
+              <Text style={styles.text}>{item.id}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.text}>User ID: {item.userId}</Text>
+              <Text style={styles.boldtext}>User ID:</Text>
+              <Text style={styles.text}>{item.userId}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.text}>Parking ID: {item.parkingId}</Text>
+              <Text style={styles.boldtext}>Parking ID:</Text>
+              <Text style={styles.text}>{item.parkingId}</Text>
             </View>
-            <View style={styles.row}>
-              <Text style={styles.text}>Booked: {item.startDate}</Text>
+            <View style={styles.rowend}>
+              <Text style={styles.boldtext}>Booked:</Text>
+              <Text style={styles.text}>{item.bookDate}</Text>
             </View>
-            <View style={styles.row}>
-              <Text style={styles.start}>Start: {item.startDate}</Text>
+            <View style={styles.rowend}>
+              <Text style={styles.boldstart}>Start: </Text>
+              <Text style={styles.start}>{item.startDate}</Text>
             </View>
-            <View style={styles.row}>
-              <Text style={styles.end}>End: {item.endDate}</Text>
+            <View style={styles.rowend}>
+              <Text style={styles.boldend}>End: </Text>
+              <Text style={styles.end}>{item.endDate}</Text>
             </View>
           </View>
           <Image style={styles.image} source={require('./LogoDay.jpg')}></Image>
@@ -175,33 +196,48 @@ const styles = StyleSheet.create({
     shadowRadius: 2.62,
     elevation: 4,
   },
-  start: {
+  boldstart: {
     fontSize: 14,
     marginLeft:10,
     marginBottom:5,
     marginTop: 5,
+    fontFamily: 'OpenSans-Bold',
+    color: 'green'
+  },
+  start: {
+    fontSize: 14,
+    margin: 5,
     fontFamily: 'OpenSans-Regular',
     color: 'green'
   },
-  text: {
+  boldtext: {
     fontSize: 14,
     marginLeft:10,
     marginBottom:5,
     marginTop: 5,
+    fontFamily: 'OpenSans-Bold'
+  },
+  text: {
+    fontSize: 14,
+    margin: 5,
     fontFamily: 'OpenSans-Regular'
+  },
+  boldend: {
+    fontSize: 14,
+    marginLeft:10,
+    marginBottom:5,
+    marginTop: 5,
+    fontFamily: 'OpenSans-Bold',
+    color: 'red'
   },
   end: {
     fontSize: 14,
-    marginLeft:10,
-    marginBottom:5,
-    marginTop: 5,
+    margin: 5,
     fontFamily: 'OpenSans-Regular',
     color: 'red'
   },
   logout: {
-    marginLeft: 20,
-    marginTop: 40,
-    marginBottom: 15,
+    marginLeft: 5,
     fontSize: 20,
     textAlign: 'center',
     fontFamily: 'SourceCodePro-Black',
@@ -214,6 +250,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   row: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-start'
+  },
+  rowend: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between'

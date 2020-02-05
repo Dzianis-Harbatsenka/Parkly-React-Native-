@@ -1,73 +1,50 @@
-import React, { Component } from 'react';
-import { ActivityIndicator, AsyncStorage } from 'react-native';
-import {Router, Scene} from 'react-native-router-flux';
 import Authentication from "./Authentication"
 import HomePage from './HomePage'
 import Details from './Details'
-import * as Font from 'expo-font';
-  
 
-class App extends Component {
+import {Animated} from 'react-native'
+import { createAppContainer } from "react-navigation";
+import { createStackNavigator  } from "react-navigation-stack";
 
-  constructor() {
-    super();
-    this.state = { 
-      hasToken: false,
-      isLoaded: false };
+
+
+
+const MainNavigator = createStackNavigator(
+  {
+  Authentication: { screen: Authentication },
+  HomePage: {screen: HomePage},
+  Details: { screen: Details }
   }
+);
 
-  componentDidMount() {
-    Font.loadAsync({
-      'SourceCodePro-Black': require('./assets/fonts/SourceCodePro-Regular.ttf'),
-      'SourceCodePro-Light': require('./assets/fonts/SourceCodePro-Light.ttf'),
-      'SourceCodePro-Regular': require('./assets/fonts/SourceCodePro-Regular.ttf'),
-    });
-    AsyncStorage.getItem('token').then((token) => {
-      this.setState({ 
-        hasToken: token !== null
-      })
-    })
-    .then(()=>this.setState({isLoaded:true}));
-  }
+const transitionConfig = () => {
+  return {
+    transitionSpec: {
+      duration: 500,
+      easing: Easing.out(Easing.poly(4)),
+      timing: Animated.timing,
+      useNativeDriver: true,
+    },
+    screenInterpolator: sceneProps => {
+      const { layout, position, scene } = sceneProps;
 
-  render() {
+      const thisSceneIndex = scene.index;
+      const width = layout.initWidth;
 
-    if (!this.state.isLoaded) {
-      return (
-        <ActivityIndicator/>
-      )
-    }else{
-      return(
-        <Router navigationBarStyle={{backgroundColor: '#2054A0'}}>
-          <Scene key='root'>
-            <Scene
-              component={Authentication}
-              hideNavBar={true}
-              initial={!this.state.hasToken}
-              key='Authentication'
-              title='Authentication'
-            />
-            <Scene
-              component={HomePage}
-              hideNavBar={true}
-              key='HomePage'
-              title='LOG OUT'
-              titleStyle={{fontWeight: 'normal',fontFamily: 'SourceCodePro-Black',color: '#FFFFFF'}}
-            />
-            <Scene
-              component={Details}
-              key='Details'
-              title='DETAILS'
-              show
-              titleStyle={{fontWeight: 'normal',fontFamily: 'SourceCodePro-Black',color: '#FFFFFF'}} 
-            />
-          </Scene>
-        </Router>
-      )
+      const translateX = position.interpolate({
+        inputRange: [thisSceneIndex - 1, thisSceneIndex],
+        outputRange: [-width, 0],
+        extrapolate: 'clamp'
+      });
+
+      return {
+        transform: [{ translateX }]
+      }
     }
   }
 }
 
+const App = createAppContainer(MainNavigator);
 
 export default App
 
