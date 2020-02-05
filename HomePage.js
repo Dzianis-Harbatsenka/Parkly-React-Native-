@@ -10,7 +10,8 @@ import {
   Image,
   RefreshControl,
   ActivityIndicator,
-  BackHandler
+  BackHandler,
+  NetInfo 
 } from 'react-native';
 
 
@@ -22,7 +23,8 @@ class HomePage extends Component {
     super(props);
     this.state={
       data:[],
-      isLoading: true
+      isLoading: true,
+      isConnected: true
     };
   }
 
@@ -45,7 +47,7 @@ class HomePage extends Component {
         backgroundColor: '#2054A0'
       },
       headerLeft: ()=>(
-        <TouchableOpacity onPress={()=>navigation.navigate('Authentication')}>
+        <TouchableOpacity disabled={!navigation.getParam('isConnected')} onPress={()=>navigation.navigate('Authentication')}>
           <Text style={styles.logout}> LOG OUT </Text>
         </TouchableOpacity>
         )
@@ -55,12 +57,21 @@ class HomePage extends Component {
   componentDidMount(){
     this.getProtectedQuote();
     this.props.navigation.setParams({userLogout: ()=>this.userLogout(this.props.navigation)});
+    this.props.navigation.setParams({isConnected: this.state.isConnected});
     BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+    NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectivityChange);
   }
 
   componentWillUnmount(){
     BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
+    NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectivityChange);
     this.userLogout(this.props.navigation);
+    
+  }
+
+  handleConnectivityChange=(connection)=>{
+    this.setState({isConnected: connection});
+    this.props.navigation.setParams({isConnected: this.state.isConnected});
   }
 
   handleBackPress =()=>{
@@ -109,6 +120,17 @@ class HomePage extends Component {
               <ActivityIndicator size={80} color='#2054A0'></ActivityIndicator>
             </View>
           </View>
+        )
+      }
+
+      if(!this.state.isConnected){
+        return (
+          <View style={styles.container}>
+            <View style={styles.loading}>
+              <Text style={styles.login}>No internet</Text>
+              <ActivityIndicator size={80} color='#2054A0'></ActivityIndicator>
+            </View>
+        </View>
         )
       }
 
@@ -273,7 +295,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.23,
     shadowRadius: 2.62,
     elevation: 4,
-  }
+  },
+  login: {
+    textAlign:'center',
+    fontSize: 18,
+    margin: 10,
+    fontFamily: 'SourceCodePro-Black',
+    color: '#2054A0'
+  },
 });
 
 

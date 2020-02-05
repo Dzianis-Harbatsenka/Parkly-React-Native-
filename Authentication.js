@@ -9,7 +9,8 @@ import {
   Alert,
   Image,
   ScrollView,
-  ActivityIndicator
+  ActivityIndicator,
+  NetInfo 
 } from 'react-native';
 import * as Font from 'expo-font';
 import { Base64 } from 'js-base64';
@@ -24,7 +25,8 @@ class Authentication extends Component {
     this.state = { 
         username: null, 
         password: null,
-        isLoading: true 
+        isLoading: true,
+        isConnected: true
     };
   }
 
@@ -60,6 +62,10 @@ class Authentication extends Component {
             )
     })})
     .done();
+    NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectivityChange);
+  }
+  componentWillUnmount(){
+    NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectivityChange);
   }
 
   async saveItem(item, selectedValue) {
@@ -69,6 +75,10 @@ class Authentication extends Component {
     } catch (error) {
       console.error('AsyncStorage error: ' + error.message);
     }
+  }
+
+  handleConnectivityChange=(connection)=>{
+    this.setState({isConnected: connection})
   }
 
   encrypt_password = () => {
@@ -122,7 +132,7 @@ class Authentication extends Component {
 
   render() {
 
-    const {isLoading}=this.state;
+    const {isLoading,isConnected}=this.state;
 
     if(isLoading){
       return (
@@ -133,6 +143,18 @@ class Authentication extends Component {
           </View>
       );
     }
+
+    if(!isConnected){
+      return (
+        <View style={styles.container}>
+          <View style={styles.loading}>
+            <Text style={styles.login}>No internet</Text>
+            <ActivityIndicator size={80} color='#2054A0'></ActivityIndicator>
+          </View>
+      </View>
+      )
+    }
+
     return (
       <View style={styles.outer}>
         <ScrollView>
